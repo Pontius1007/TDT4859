@@ -2,6 +2,8 @@ import numpy
 from keras.models import Sequential
 from keras.layers import Dense
 
+# Taken from https://machinelearningmastery.com/tutorial-first-neural-network-python-keras/
+
 # Load the dataset
 dataset = numpy.loadtxt("sample_wp1.csv", delimiter=",", skiprows=1)
 
@@ -19,12 +21,17 @@ model.add(Dense(1, activation='sigmoid'))
 
 # Compile the model
 # Binary cross may have to be changed
-model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy'])
-
+model.compile(loss='mean_squared_error', optimizer='adam', metrics=['accuracy', 'mae'])
 
 # Fit the model aka do some training
-model.fit(features, target, epochs=100, batch_size=5)
+model.fit(features, target, epochs=10, batch_size=15)
 
 # Evaluate the model
-scores = model.evaluate(features, target)
-print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+scores = model.evaluate(features, target, verbose=1)
+print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+
+# Try some predictions
+predictions = model.predict(features[:10])
+
+for i in range(len(predictions)):
+    print("Target: " + str(target[i]) + " Guess: " + str(predictions[i]))
