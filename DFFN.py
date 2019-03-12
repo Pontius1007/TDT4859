@@ -34,4 +34,9 @@ print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
 predictions = model.predict(features[:10])
 
 for i in range(len(predictions)):
-    print("Target: " + str(target[i]) + " Guess: " + str(predictions[i]))
+    if(target[i] == 0):
+        percentFromTarget = ""
+    else:
+        percentFromTarget = (predictions[i][0] / target[i])*100
+    print("Target: " + str(target[i]) + " Guess: " + str(
+        predictions[i][0]) + " Percentage away from target: " + str(percentFromTarget) + "%")
