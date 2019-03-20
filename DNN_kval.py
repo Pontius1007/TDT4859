@@ -7,6 +7,7 @@ from keras.models import Sequential
 from keras.layers.core import Dense, Activation
 from keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
+from keras.layers.normalization import BatchNormalization
 
 
 full_dataset = np.genfromtxt("sample_wp1_full.csv", delimiter = ",", skip_header = 1)
@@ -39,6 +40,7 @@ if validation:
         y_k_test = Y_train[val]
 
         model = Sequential()
+        model.add(BatchNormalization(epsilon=0.001))
         model.add(Dense(40, input_dim=len(x_k_train[0]), kernel_initializer='normal', activation='relu'))
         model.add(Dense(20, kernel_initializer='normal', activation='relu'))
         #model.add(Dense(20, kernel_initializer='normal', activation='relu'))
@@ -63,6 +65,7 @@ if validation:
 #train on the whole training set
 history = model.fit(X_train,Y_train,epochs=50,batch_size=30)
 
+print(mean(val_score))
 plt.plot(history.history['loss'])
 plt.title('Model loss')
 plt.ylabel('Mean squared error')
