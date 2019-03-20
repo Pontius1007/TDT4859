@@ -65,7 +65,7 @@ if validation:
 #train on the whole training set
 history = model.fit(X_train,Y_train,epochs=50,batch_size=30)
 
-print(mean(val_score))
+print(np.mean(val_score))
 plt.plot(history.history['loss'])
 plt.title('Model loss')
 plt.ylabel('Mean squared error')
