@@ -9,8 +9,8 @@ from Settings import *
 
 full_dataset = np.genfromtxt("sample_wp1_full.csv", delimiter=",", skip_header=1)
 
-dataset = full_dataset[:][:]
-# traning set is 80% of dataset
+dataset = full_dataset[:12000][:]
+# training set is 80% of dataset
 train_N = int(Settings.training_size * round(len(dataset)))
 
 X_train = dataset[0:train_N, 0:11]
@@ -37,7 +37,8 @@ if Settings.validate:
 
         model = Sequential()
         model.add(BatchNormalization(epsilon=0.001))
-        model.add(Dense(Settings.input_layer, input_dim=len(x_k_train[0]), kernel_initializer='normal', activation='relu'))
+        model.add(
+            Dense(Settings.input_layer, input_dim=len(x_k_train[0]), kernel_initializer='normal', activation='relu'))
         model.add(Dense(Settings.h_layer1, kernel_initializer='normal', activation='relu'))
         model.add(Dense(Settings.h_layer2, kernel_initializer='normal', activation='relu'))
         model.add(Dense(Settings.output_layer))
@@ -57,10 +58,11 @@ if Settings.validate:
         print("Fold score (MSE): {}".format(val_score[fold - 1]))
 
 # train on the whole training set
-history = model.fit(X_train, Y_train, epochs=Settings.epochs, batch_size=Settings.batch_size)
+# history = model.fit(X_train, Y_train, epochs=Settings.epochs, batch_size=Settings.batch_size)
 
-print(np.mean(val_score))
-plt.plot(history.history['loss'])
+print("This is the score you are supposed to check against: ")
+print("Mean value score: ", np.mean(val_score))
+# plt.plot(history.history['loss'])
 plt.title('Model loss')
 plt.ylabel('Mean squared error')
 plt.xlabel('epoch')
