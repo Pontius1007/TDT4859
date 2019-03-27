@@ -1,9 +1,9 @@
 class Settings:
     # Training variables
     training_size = 0.8
-    epochs = 20
+    epochs = 250
     batch_size = 30
-    verbose = 0
+    verbose = 1
     n_splits = 5
 
     # Layer variables
