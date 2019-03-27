@@ -1,4 +1,5 @@
 # https://machinelearningmastery.com/backtest-machine-learning-models-time-series-forecasting/
+import os
 
 import pandas
 from sklearn import metrics
@@ -12,7 +13,8 @@ import numpy as np
 
 def multiple_train_test_splits(file_name):
     # Load data using Pandas
-    series = pandas.read_csv(file_name, header=0)
+    cols = list(pandas.read_csv(file_name, nrows=1))
+    series = pandas.read_csv(file_name, header=0, usecols=[i for i in cols if i != 'date'])
     # Convert to numpy array
     data = series.to_numpy()
 
@@ -111,7 +113,8 @@ def create_model():
 
 
 def main():
-    multiple_train_test_splits("sample_wp1.csv")
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
+    multiple_train_test_splits("Processed_data/wp1.csv")
 
 
 if __name__ == '__main__':
