@@ -1,7 +1,7 @@
 class Settings:
     # Training variables
     training_size = 0.8
-    epochs = 250
+    epochs = 50
     batch_size = 30
     verbose = 2
     n_splits = 5

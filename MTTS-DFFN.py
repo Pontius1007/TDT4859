@@ -106,21 +106,21 @@ def create_model():
     model.add(
         Dense(Settings.input_layer, input_dim=Settings.number_of_features, kernel_initializer='normal', use_bias=False))
     model.add(Activation('relu'))
-    model.add(BatchNormalization(epsilon=0.001))
+    # model.add(BatchNormalization())
 
     # Hidden Layer 1
     model.add(Dense(Settings.h_layer1, kernel_initializer='normal'))
     model.add(Activation('relu'))
-    # model.add(BatchNormalization(epsilon=0.001))
+    # model.add(BatchNormalization())
 
     # Hidden Layer 2
     model.add(Dense(Settings.h_layer2, kernel_initializer='normal'))
     model.add(Activation('relu'))
-    # model.add(BatchNormalization(epsilon=0.001))
+    # model.add(BatchNormalization())
 
     # Output layer
     model.add(Dense(Settings.output_layer))
-    model.add(BatchNormalization())
+    # model.add(BatchNormalization())
 
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
