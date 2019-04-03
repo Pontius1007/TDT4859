@@ -126,7 +126,7 @@ def create_model():
     model.add(Dense(Settings.output_layer))
     # model.add(BatchNormalization())
 
-    model.compile(loss='mean_squared_error', optimizer='adam')
+    model.compile(loss='mean_squared_error', optimizer='adam', metrics=['mse', 'mae'])
     return model
 
 
