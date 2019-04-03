@@ -39,9 +39,9 @@ def load_dataset(file_name):
     data = series.to_numpy()
 
     # Plotting lists
-    training_length = len(data)*Settings.training_size
-    training = data[train_index]
-    test = data[test_index]
+    training_length = int(len(data)*Settings.training_size)
+    training = data[:training_length]
+    test = data[training_length:]
 
     # Getting features and targets
     train_features = training[:, 0:11]
