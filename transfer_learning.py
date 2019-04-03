@@ -3,6 +3,7 @@ from keras.models import model_from_json
 from MTTS_DFFN import create_model
 from Settings import *
 from matplotlib import pyplot as plt
+from sklearn import metrics
 
 
 def save_model(model, filename):
@@ -73,22 +74,28 @@ def train_model(x_features, x_targets, y_features, y_targets, file_name):
 def load_models_and_predict(wind_parks):
     number_of_last_predictions = 500
     models = []
-    for wind_park in range(7):
+    for wind_park in range(6):
         models.append(load_model("Models/" + str(wind_park+1)))
 
     wp7_features, wp7_targets = load_dataset(wind_parks[-1], True)
+    wp7_features = wp7_features[-500:]
+    wp7_targets = wp7_targets[-500:]
     predictions = []
     for model in models:
-        predictions.append(model.predict(wp7_features[-number_of_last_predictions:]))
+        predictions.append(model.predict(wp7_features))
 
+    mses = []
     for prediction in predictions:
+        mses.append(metrics.mean_squared_error(wp7_targets, prediction))
         plt.plot(prediction)
+    plt.plot(wp7_targets)
     plt.title("Predictions for all 6 windparks on data from windpark 7")
     plt.xlabel('epoch')
-    plt.legend(['1', '2', '3', '4', '5', '6', '7'], loc='upper left')
+    plt.legend(['1', '2', '3', '4', '5', '6', '7 - Target'], loc='upper left')
 
-    plt.plot(wp7_targets[-number_of_last_predictions:])
     plt.show()
+
+    print(mses)
 
 
 def main():
