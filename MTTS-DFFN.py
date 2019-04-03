@@ -4,7 +4,7 @@ import os
 import pandas
 from sklearn import metrics
 from keras import Sequential
-from keras.layers import BatchNormalization, Dense
+from keras.layers import BatchNormalization, Dense, Activation, Dropout
 from sklearn.model_selection import TimeSeriesSplit
 from Settings import *
 from matplotlib import pyplot
@@ -83,8 +83,8 @@ def multiple_train_test_splits(file_name):
 
     pyplot.plot(pred)
     pyplot.plot(y_test)
-    pyplot.title('Real vs predicted value')
-    pyplot.legend(['Real', 'Prediction'], loc='upper left')
+    pyplot.title('Predicted vs realvalue')
+    pyplot.legend(['Prediction', 'Real'], loc='upper left')
     pyplot.show()
 
 
@@ -101,19 +101,33 @@ def plot_loss(validation_hist):
 
 def create_model():
     model = Sequential()
-    model.add(BatchNormalization(epsilon=0.001))
+
+    # Input layer
     model.add(
-        Dense(Settings.input_layer, input_dim=Settings.number_of_features, kernel_initializer='normal',
-              activation='relu'))
-    model.add(Dense(Settings.h_layer1, kernel_initializer='normal', activation='relu'))
-    model.add(Dense(Settings.h_layer2, kernel_initializer='normal', activation='relu'))
+        Dense(Settings.input_layer, input_dim=Settings.number_of_features, kernel_initializer='normal', use_bias=False))
+    model.add(Activation('relu'))
+    model.add(BatchNormalization(epsilon=0.001))
+
+    # Hidden Layer 1
+    model.add(Dense(Settings.h_layer1, kernel_initializer='normal'))
+    model.add(Activation('relu'))
+    # model.add(BatchNormalization(epsilon=0.001))
+
+    # Hidden Layer 2
+    model.add(Dense(Settings.h_layer2, kernel_initializer='normal'))
+    model.add(Activation('relu'))
+    # model.add(BatchNormalization(epsilon=0.001))
+
+    # Output layer
     model.add(Dense(Settings.output_layer))
+    model.add(BatchNormalization())
+
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
 
 def main():
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # or any {'0', '1', '2'}
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     multiple_train_test_splits("Processed_data/wp1.csv")
 
 
