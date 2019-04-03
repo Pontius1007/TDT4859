@@ -9,6 +9,8 @@ from sklearn.model_selection import TimeSeriesSplit
 from Settings import *
 from matplotlib import pyplot
 import numpy as np
+from keras.models import model_from_json
+
 
 
 def multiple_train_test_splits(file_name):
@@ -78,6 +80,8 @@ def multiple_train_test_splits(file_name):
 
     # Predicting and plotting result
     pred = model.predict(x_test)
+    save_model(model, "wp1model")
+
     score = metrics.mean_squared_error(pred, y_test)
     print("Train test score (MSE): {}".format(score))
 
@@ -124,6 +128,30 @@ def create_model():
 
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
+
+
+def save_model(model, filename):
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open(filename + "json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    weightname = filename + "weights.h5"
+    model.save_weights(weightname)
+    print("Saved model to disk")
+
+
+def load_model(filename):
+    # load json and create model
+    json_file = open(filename + "json", 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    weightname = filename + "weights.h5"
+    loaded_model.load_weights(weightname)
+    print("Loaded model from disk")
+    return loaded_model
 
 
 def main():
