@@ -1,34 +1,15 @@
 import pandas
-from keras.models import model_from_json
+from keras.models import load_model, save_model
 from MTTS_DFFN import create_model
 from Settings import *
 from matplotlib import pyplot as plt
 from sklearn import metrics
+from termcolor import cprint
+from pyfiglet import figlet_format
+from colorama import init
+import sys
+init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
 
-
-def save_model(model, filename):
-    # serialize model to JSON
-    model_json = model.to_json()
-    with open(filename + ".json", "w") as json_file:
-        json_file.write(model_json)
-    print("Saved model as: " + filename + ".json")
-    # serialize weights to HDF5
-    weightname = filename + "weights.h5"
-    model.save_weights(weightname)
-    print("Saved weight as: " + weightname)
-
-
-def load_model(filename):
-    # load json and create model
-    json_file = open(filename + ".json", 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = model_from_json(loaded_model_json)
-    # load weights into new model
-    weightname = filename + "weights.h5"
-    loaded_model.load_weights(weightname)
-    print("Loaded model: " + filename)
-    return loaded_model
 
 
 def load_dataset(file_name, wp7):
@@ -72,14 +53,13 @@ def train_model(x_features, x_targets, y_features, y_targets, file_name):
 
 
 def load_models_and_predict(wind_parks):
-    number_of_last_predictions = 500
     models = []
     for wind_park in range(6):
-        models.append(load_model("Models/" + str(wind_park+1)))
+        models.append(load_model("Models/" + str(wind_park + 1)))
 
     wp7_features, wp7_targets = load_dataset(wind_parks[-1], True)
-    wp7_features = wp7_features[-500:]
-    wp7_targets = wp7_targets[-500:]
+    wp7_features = wp7_features[-Settings.wp7_predictions:]
+    wp7_targets = wp7_targets[-Settings.wp7_predictions:]
     predictions = []
     for model in models:
         predictions.append(model.predict(wp7_features))
@@ -98,45 +78,86 @@ def load_models_and_predict(wind_parks):
     print(mses)
 
 
+def transfer_learning_training(base_model_name, n_epochs, months_of_data):
+    # One months of data translates to about 750 rows in our dataset
+    rows_of_data = 750 if (months_of_data == 1) else 2250
+    # baseline_model = load_model("Models/" + base_model_name)
+    baseline_model = load_model("Models/" + base_model_name + ".h5")
+    train_features, train_targets = load_dataset("Processed_data/wp7.csv", True)
+    train_features, train_targets = train_features[-rows_of_data:], train_targets[-rows_of_data:]
+    # Training
+    history = baseline_model.fit(x=train_features, y=train_targets, verbose=Settings.verbose, epochs=n_epochs,
+                                 validation_split=0.1)
+
+    # Saving the model
+    print("Saving the model...")
+    save_model(baseline_model,
+               "Models/model" + base_model_name + "epochs" + str(n_epochs) + "months" + str(months_of_data) + ".h5")
+    print("Saved as: " + "model" + base_model_name + "epochs" + str(n_epochs) + "months" + str(months_of_data) + ".h5")
+
+    # summarize history for accuracy
+    plt.plot(history.history['mean_squared_error'])
+    plt.title(
+        'MSE for windpark 6 after ' + str(n_epochs) + " epochs " + "and " + str(months_of_data) + " month(s) of data")
+    plt.xlabel('epoch')
+    plt.legend(['MSE'], loc='upper left')
+    plt.show()
+
+
+def train(file_name, user_input):
+    train_features, train_targets, test_features, test_targets = load_dataset(file_name, False)
+    model = train_model(train_features, train_targets, test_features, test_targets, file_name)
+    save_model(model, "Models/" + str(user_input) + ".h5")
+
+
 def main():
-    do_training = True
+    run = True
     wind_parks = ["Processed_data/wp1.csv", "Processed_data/wp2.csv", "Processed_data/wp3.csv",
                   "Processed_data/wp4.csv", "Processed_data/wp5.csv", "Processed_data/wp6.csv",
                   "Processed_data/wp7.csv"]
-    while do_training:
-        user_input = (input("Enter wind park ID you want to load and train: "))
+    cprint(figlet_format('AI is the future', font='doom'), 'red', attrs=['bold'])
+    while run:
+        print("Commands: Number 1-7 to train on a given park")
+        print("'all' to train on all datasets. 'transfer' to do some transfer learning")
+        print("and 'load' to load model 1-6 and predict on park 7.")
+        user_input = (input("Enter the command you want to run: "))
         if user_input == '1':
             file_name = wind_parks[0]
+            train(file_name, user_input)
         elif user_input == '2':
             file_name = wind_parks[1]
+            train(file_name, user_input)
         elif user_input == '3':
             file_name = wind_parks[2]
+            train(file_name, user_input)
         elif user_input == '4':
             file_name = wind_parks[3]
+            train(file_name, user_input)
         elif user_input == '5':
             file_name = wind_parks[4]
+            train(file_name, user_input)
         elif user_input == '6':
             file_name = wind_parks[5]
+            train(file_name, user_input)
         elif user_input == '7':
             file_name = wind_parks[6]
+            train(file_name, user_input)
+        elif user_input == "transfer":
+            epochs = int(input("Enter the number of training epochs: "))
+            b_model = input("Enter the model you want as your baseline. 1-6: ")
+            months = int(input("Enter the number of months for training data. 1 or 3: "))
+            transfer_learning_training(b_model, epochs, months)
         elif user_input == 'all':
             for i in range(7):
                 file_name = wind_parks[i]
                 train_features, train_targets, test_features, test_targets = load_dataset(file_name, False)
                 model = train_model(train_features, train_targets, test_features, test_targets, file_name)
-                save_model(model, "Models/" + str(i + 1))
+                save_model(model, "Models/" + str(i + 1) + ".h5")
         elif user_input == "load":
             load_models_and_predict(wind_parks)
-            do_training = False
         else:
-            file_name = ""
-            print("Wind park not recognised. Quitting.")
-            do_training = False
-
-        if do_training:
-            train_features, train_targets, test_features, test_targets = load_dataset(file_name, False)
-            model = train_model(train_features, train_targets, test_features, test_targets, file_name)
-            save_model(model, "Models/" + str(user_input))
+            print("Operation not recognised. Quitting.")
+            run = False
 
 
 if __name__ == '__main__':

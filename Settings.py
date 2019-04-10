@@ -5,6 +5,7 @@ class Settings:
     batch_size = 30
     verbose = 2
     n_splits = 5
+    wp7_predictions = 500
 
     # Layer variables
     number_of_features = 11
