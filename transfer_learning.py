@@ -8,8 +8,8 @@ from termcolor import cprint
 from pyfiglet import figlet_format
 from colorama import init
 import sys
-init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
 
+init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
 
 
 def load_dataset(file_name, wp7):
@@ -55,7 +55,7 @@ def train_model(x_features, x_targets, y_features, y_targets, file_name):
 def load_models_and_predict(wind_parks):
     models = []
     for wind_park in range(6):
-        models.append(load_model("Models/" + str(wind_park + 1)))
+        models.append(load_model("Models/" + str(wind_park + 1) + ".h5"))
 
     wp7_features, wp7_targets = load_dataset(wind_parks[-1], True)
     wp7_features = wp7_features[-Settings.wp7_predictions:]
