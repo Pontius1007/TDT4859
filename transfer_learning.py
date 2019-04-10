@@ -8,6 +8,8 @@ from termcolor import cprint
 from pyfiglet import figlet_format
 from colorama import init
 import sys
+from os import listdir
+from os.path import isfile, join
 
 init(strip=not sys.stdout.isatty())  # strip colors if stdout is redirected
 
@@ -45,7 +47,7 @@ def train_model(x_features, x_targets, y_features, y_targets, file_name):
     # summarize history for accuracy
     plt.plot(history.history['mean_squared_error'])
     plt.title('model MSE for windpark ' + file_name)
-    plt.xlabel('epoch')
+    plt.xlabel('Hours')
     plt.legend(['MSE'], loc='upper left')
     plt.show()
 
@@ -110,6 +112,35 @@ def train(file_name, user_input):
     save_model(model, "Models/" + str(user_input) + ".h5")
 
 
+def load_and_predict_transfer():
+    models = []
+    onlyfiles = [f for f in listdir("Models/Transfer") if isfile(join("Models/Transfer", f))]
+
+    for model_name in onlyfiles:
+        models.append(load_model("Models/Transfer/" + model_name))
+    models.append(load_model("Models/7.h5"))
+    onlyfiles.append("7 - Target")
+
+    wp7_features, wp7_targets = load_dataset("Processed_data/wp7.csv", True)
+    # Predictions on the last 500 datapoints which the model has not been trained on
+    wp7_features, wp7_targets = wp7_features[15650:-2250], wp7_targets[15650:-2250]
+    predictions = []
+    for model in models:
+        predictions.append(model.predict(wp7_features))
+    mses = []
+    for prediction in predictions:
+        mses.append(metrics.mean_squared_error(wp7_targets, prediction))
+        plt.plot(prediction)
+    plt.plot(wp7_targets)
+    plt.title("Predictions for all transfer wind parks trained on new data from Park 7")
+    plt.xlabel('Hours')
+    plt.legend(onlyfiles, loc='upper left')
+
+    plt.show()
+
+    print(mses)
+
+
 def main():
     run = True
     wind_parks = ["Processed_data/wp1.csv", "Processed_data/wp2.csv", "Processed_data/wp3.csv",
@@ -142,6 +173,8 @@ def main():
         elif user_input == '7':
             file_name = wind_parks[6]
             train(file_name, user_input)
+        elif user_input == "pt":
+            load_and_predict_transfer()
         elif user_input == "transfer":
             epochs = int(input("Enter the number of training epochs: "))
             b_model = input("Enter the model you want as your baseline. 1-6: ")
