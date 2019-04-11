@@ -10,18 +10,25 @@ from Settings import *
 from matplotlib import pyplot
 import numpy as np
 from keras.models import model_from_json
-
+import matplotlib.dates as mdates
+from baseline import str_to_datetime
 
 
 def multiple_train_test_splits(file_name):
     # Load data using Pandas
     cols = list(pandas.read_csv(file_name, nrows=1))
-    series = pandas.read_csv(file_name, header=0, usecols=[i for i in cols if i != 'date'])
+    series = pandas.read_csv(file_name, header=0, usecols=[i for i in cols])
     # Convert to numpy array
     data = series.to_numpy()
+    dates = data[:,0]
+
+
+    data = data[:,1:]
+
 
     splits = TimeSeriesSplit(n_splits=Settings.n_splits)
     f1 = pyplot.figure(1)
+    f1.suptitle("Windpark 7")
 
     x_test = []
     y_test = []
@@ -70,7 +77,6 @@ def multiple_train_test_splits(file_name):
         y_test = y_targets
 
         index += 1
-
     pyplot.show()
 
     print("Mean value score for all train tests: ", np.mean(val_score))
@@ -80,14 +86,19 @@ def multiple_train_test_splits(file_name):
 
     # Predicting and plotting result
     pred = model.predict(x_test)
-    save_model(model, "wp1model")
+
 
     score = metrics.mean_squared_error(pred, y_test)
     print("Train test score (MSE): {}".format(score))
 
-    pyplot.plot(pred)
-    pyplot.plot(y_test)
-    pyplot.title('Predicted vs realvalue')
+    dates = dates[-len(y_test):]
+    frame = pandas.DataFrame({"Dates" : dates})
+    frame["Dates"] = frame["Dates"].apply(str_to_datetime)
+
+
+    pyplot.plot(frame["Dates"], pred)
+    pyplot.plot(frame["Dates"], y_test)
+    pyplot.title('Windpark 7')
     pyplot.legend(['Prediction', 'Real'], loc='upper left')
     pyplot.show()
 
@@ -96,9 +107,10 @@ def plot_loss(validation_hist):
     pyplot.figure(1)
     for x in validation_hist:
         pyplot.plot(x)
-    pyplot.title('Model loss')
+    pyplot.title('Model loss for windpark 7')
     pyplot.ylabel('Mean squared error')
     pyplot.xlabel('epoch')
+
     pyplot.legend(['Train 1', 'Train 2', 'Train 3', 'Train 4', 'Train 5'], loc='upper right')
     pyplot.show()
 
@@ -130,33 +142,9 @@ def create_model():
     return model
 
 
-def save_model(model, filename):
-    # serialize model to JSON
-    model_json = model.to_json()
-    with open(filename + "json", "w") as json_file:
-        json_file.write(model_json)
-    # serialize weights to HDF5
-    weightname = filename + "weights.h5"
-    model.save_weights(weightname)
-    print("Saved model to disk")
-
-
-def load_model(filename):
-    # load json and create model
-    json_file = open(filename + "json", 'r')
-    loaded_model_json = json_file.read()
-    json_file.close()
-    loaded_model = model_from_json(loaded_model_json)
-    # load weights into new model
-    weightname = filename + "weights.h5"
-    loaded_model.load_weights(weightname)
-    print("Loaded model from disk")
-    return loaded_model
-
-
 def main():
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    multiple_train_test_splits("Processed_data/wp1.csv")
+    multiple_train_test_splits("Processed_data/wp7.csv")
 
 
 if __name__ == '__main__':
