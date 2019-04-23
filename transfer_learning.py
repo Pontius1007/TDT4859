@@ -150,7 +150,7 @@ def main():
     while run:
         print("Commands: Number 1-7 to train on a given park")
         print("'all' to train on all datasets. 'transfer' to do some transfer learning")
-        print("and 'load' to load model 1-6 and predict on park 7.")
+        print("and 'load' to load model 1-6 and predict on park 7. 'pt' for predict transfer")
         user_input = (input("Enter the command you want to run: "))
         if user_input == '1':
             file_name = wind_parks[0]
