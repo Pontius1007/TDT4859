@@ -138,7 +138,10 @@ def load_and_predict_transfer():
 
     plt.show()
 
-    print(mses)
+    i = 0
+    for model_name in onlyfiles:
+        print(model_name, ": ", mses[i])
+        i += 1
 
 
 def main():
